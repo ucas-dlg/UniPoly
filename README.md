@@ -2,7 +2,7 @@
 
 Official implementation of **UniPoly: A Unified Instance-Level Framework for Polygon and Polyline Extraction from Remote Sensing Images**.
 
-UniPoly formulates building polygon extraction and road/boundary polyline extraction in a unified instance-level framework. The repository contains the model, dataset loaders, training scripts, evaluation routines, and experiment configurations used for the three benchmark settings in the paper.
+UniPoly formulates building polygon extraction and road/boundary polyline extraction in a unified instance-level framework. The repository contains the model, dataset loaders, training scripts, and experiment configurations used for the three benchmark settings in the paper.
 
 ![UniPoly illustration](./figs/overview.png)
 
@@ -10,9 +10,8 @@ UniPoly formulates building polygon extraction and road/boundary polyline extrac
 
 - Unified instance-level extraction framework for both polygons and polylines.
 - End-to-end Transformer-based architecture built on Deformable DETR.
-- Dataset-specific training and evaluation entry points for CrowdAI, SpaceNet3, and TopoBoundary.
+- Dataset-specific training entry points for CrowdAI, SpaceNet3, and TopoBoundary.
 - COCO-style annotation interface with instance point sequences stored in `segmentation`.
-- Integrated evaluation pipelines for building polygon quality and road/boundary topology metrics.
 
 ## Repository Structure
 
@@ -22,16 +21,16 @@ UniPoly/
 │   ├── crowdai.sh
 │   ├── spacenet3.sh
 │   └── topoboundary.sh
-├── datasets/                   # Dataset readers, transforms, and evaluation helpers
+├── datasets/                   # Dataset readers and transforms
 ├── models/                     # UniPoly model and Deformable Attention CUDA operator
 │   └── ops/                    # Multi-scale deformable attention extension
-├── train/                      # Main training/evaluation entry points
+├── train/                      # Main training entry points
 │   ├── main_crowdai.py
 │   ├── main_spacenet3.py
 │   └── main_topoboundary.py
 ├── tools/                      # Distributed training launchers
 ├── util/                       # Common utilities
-├── engine.py                   # Training and evaluation loops
+├── engine.py                   # Training loop utilities
 ├── environment.yml             # Reference conda environment
 └── README.md
 ```
@@ -60,7 +59,7 @@ If your CUDA/PyTorch version differs from the reference environment, install the
 
 ### Compile Deformable Attention
 
-UniPoly uses the multi-scale deformable attention CUDA operator inherited from Deformable DETR. Compile it before training or evaluation:
+UniPoly uses the multi-scale deformable attention CUDA operator inherited from Deformable DETR. Compile it before training:
 
 ```bash
 cd models/ops
@@ -72,6 +71,10 @@ cd ../..
 The unit test should report successful checks. If compilation fails, verify that `CUDA_HOME`, `nvcc`, PyTorch, and GCC are mutually compatible.
 
 ## Data Preparation
+
+Processed JSON files required for training UniPoly on the three datasets are available here:
+
+- [UniPoly processed JSON files for CrowdAI, SpaceNet3, and TopoBoundary](https://drive.google.com/drive/folders/1ObFklh7ZX4LZBhgkwQIQBwt0ZQkKf7EC?usp=drive_link)
 
 The code uses COCO-style JSON annotations. Each object annotation should contain at least:
 
@@ -215,11 +218,11 @@ The same pattern applies to `configs/spacenet3.sh` and `configs/topoboundary.sh`
 
 ### Main Hyperparameters
 
-| Dataset | Entry | Epochs | Batch size | Instance queries | Points per instance | LR drop | Evaluator |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| CrowdAI | `train/main_crowdai.py` | 100 | 4 | 35 | 64 | 20 | `evaluate_building` |
-| SpaceNet3 | `train/main_spacenet3.py` | 500 | 1 | 80 | 64 | 40 | `evaluate_pixeleval` |
-| TopoBoundary | `train/main_topoboundary.py` | 500 | 4 | 24 | 64 | 40 | `evaluate_aplsv2` |
+| Dataset | Entry | Epochs | Batch size | Instance queries | Points per instance | LR drop |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| CrowdAI | `train/main_crowdai.py` | 100 | 4 | 35 | 64 | 20 |
+| SpaceNet3 | `train/main_spacenet3.py` | 500 | 1 | 80 | 64 | 40 |
+| TopoBoundary | `train/main_topoboundary.py` | 500 | 4 | 24 | 64 | 40 |
 
 Common defaults:
 
@@ -233,40 +236,6 @@ Common defaults:
 - feature levels: 4
 - seed: 42
 - two-stage and iterative box refinement enabled
-
-## Evaluation
-
-### Evaluate CrowdAI Checkpoints
-
-`main_crowdai.py` supports evaluation mode:
-
-```bash
-python -u train/main_crowdai.py \
-  --eval \
-  --resume /path/to/checkpoint.pth \
-  --coco_path /path/to/CrowdAI/train/images \
-  --output_dir /path/to/eval/CrowdAI
-```
-
-### Evaluate SpaceNet3 and TopoBoundary Checkpoints
-
-The SpaceNet3 and TopoBoundary training scripts perform periodic evaluation during training. To evaluate a saved checkpoint in a standalone run, pass it through `--resume` and set the desired output directory:
-
-```bash
-python -u train/main_spacenet3.py \
-  --resume /path/to/checkpoint.pth \
-  --coco_path /path/to/sat2graph_sn3_dataset/RGB_1.0_meter \
-  --output_dir /path/to/eval/SN3
-```
-
-```bash
-python -u train/main_topoboundary.py \
-  --resume /path/to/checkpoint.pth \
-  --coco_path /path/to/Topo-boundary/dataset \
-  --output_dir /path/to/eval/TopoBoundary
-```
-
-The evaluation routines write prediction files and metric artifacts under `output_dir`. For topology-oriented metrics, make sure the external metric toolkit paths referenced in `engine.py` are available in your environment.
 
 ## Released Results
 
@@ -285,12 +254,11 @@ For faithful reproduction, please report:
 - CUDA, PyTorch, torchvision, and compiler versions.
 - Dataset version, split files, and annotation conversion script if modified.
 - Number and type of GPUs.
-- Full command line for training and evaluation.
+- Full command line for training.
 - Random seed. The default seed is `42`.
-- Checkpoint used for evaluation.
 - Whether `--cache_mode`, batch size, or dataset paths were changed.
 
-Training is deterministic only up to the usual limits of CUDA kernels, distributed data loading, and GPU library implementations. Small metric variations can occur across hardware and software stacks.
+Training is deterministic only up to the usual limits of CUDA kernels, distributed data loading, and GPU library implementations. Small result variations can occur across hardware and software stacks.
 
 ## License and Acknowledgement
 
@@ -298,4 +266,4 @@ This project is released under the Apache-2.0 license. Parts of the implementati
 
 ## Important Note on Absolute Paths
 
-Some scripts currently contain machine-specific absolute paths, including dataset roots, output directories, Python import paths, and external metric toolkit paths. These paths are intentionally documented above but not changed in code. Before running the repository on another machine, please update the corresponding paths in `configs/*.sh`, `train/*.py`, `datasets/*.py`, and the metric-related sections of `engine.py` to match your local environment.
+Some scripts currently contain machine-specific absolute paths, including dataset roots, output directories, and Python import paths. These paths are intentionally documented above but not changed in code. Before running the repository on another machine, please update the corresponding paths in `configs/*.sh`, `train/*.py`, and `datasets/*.py` to match your local environment.
