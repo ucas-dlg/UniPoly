@@ -4,7 +4,7 @@ Official implementation of **UniPoly: A Unified Instance-Level Framework for Pol
 
 UniPoly formulates building polygon extraction and road/boundary polyline extraction in a unified instance-level framework. The repository contains the model, dataset loaders, training scripts, evaluation routines, and experiment configurations used for the three benchmark settings in the paper.
 
-![UniPoly illustration](./figs/illustration.png)
+![UniPoly illustration](./figs/overview.pdf)
 
 ## Highlights
 
@@ -291,30 +291,6 @@ For faithful reproduction, please report:
 - Whether `--cache_mode`, batch size, or dataset paths were changed.
 
 Training is deterministic only up to the usual limits of CUDA kernels, distributed data loading, and GPU library implementations. Small metric variations can occur across hardware and software stacks.
-
-## Citation
-
-If this repository is useful for your research, please cite UniPoly:
-
-```bibtex
-@article{unipoly,
-  title={UniPoly: A Unified Instance-Level Framework for Polygon and Polyline Extraction from Remote Sensing Images},
-  author={},
-  journal={},
-  year={}
-}
-```
-
-Please also consider citing Deformable DETR, on which the implementation is built:
-
-```bibtex
-@article{zhu2020deformable,
-  title={Deformable DETR: Deformable Transformers for End-to-End Object Detection},
-  author={Zhu, Xizhou and Su, Weijie and Lu, Lewei and Li, Bin and Wang, Xiaogang and Dai, Jifeng},
-  journal={arXiv preprint arXiv:2010.04159},
-  year={2020}
-}
-```
 
 ## License and Acknowledgement
 
