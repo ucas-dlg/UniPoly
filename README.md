@@ -4,7 +4,7 @@ Official implementation of **UniPoly: A Unified Instance-Level Framework for Pol
 
 UniPoly formulates building polygon extraction and road/boundary polyline extraction in a unified instance-level framework. The repository contains the model, dataset loaders, training scripts, evaluation routines, and experiment configurations used for the three benchmark settings in the paper.
 
-![UniPoly illustration](./figs/overview.pdf)
+![UniPoly illustration](./figs/overview.png)
 
 ## Highlights
 
